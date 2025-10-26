@@ -9,13 +9,15 @@
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "next": "15.1.3",
     "@prisma/client": "^5.20.0",
+    "prisma": "^5.20.0",
     "next-auth": "^4.24.7",
     "@auth/prisma-adapter": "^2.7.2",
     "@huggingface/inference": "^2.6.4",
@@ -36,7 +38,6 @@
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
     "eslint": "^9",
-    "eslint-config-next": "16.0.0",
-    "prisma": "^5.20.0"
+    "eslint-config-next": "16.0.0"
   }
 }

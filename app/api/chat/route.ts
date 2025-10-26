@@ -4,18 +4,11 @@ import { authOptions } from '@/lib/auth'
 import { getAnswer, isHRRelated } from '@/lib/model'
 import { prisma } from '@/lib/prisma'
 
-interface SessionUser {
-  id: string
-  email?: string | null
-  name?: string | null
-}
-
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    const userId = (session?.user as SessionUser | undefined)?.id
-    if (!session?.user || !userId) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -34,6 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     const answer = await getAnswer(question)
+    const userId = (session.user as any).id
 
     let chat
 
@@ -91,8 +85,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    const userId = (session?.user as SessionUser | undefined)?.id
-    if (!session?.user || !userId) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -105,7 +98,7 @@ export async function GET(req: NextRequest) {
         where: { 
           chatId,
           chat: {
-            userId,
+            userId: (session.user as any).id,
           },
         },
         orderBy: { createdAt: 'asc' },
@@ -116,7 +109,7 @@ export async function GET(req: NextRequest) {
 
     // Otherwise, get all chats for the user
     const chats = await prisma.chat.findMany({
-      where: { userId },
+      where: { userId: (session.user as any).id },
       orderBy: { updatedAt: 'desc' },
       include: {
         messages: {
