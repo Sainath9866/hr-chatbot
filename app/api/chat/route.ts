@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getAnswer, isHRRelated } from '@/lib/model'
+import { getAnswer } from '@/lib/model'
 import { prisma } from '@/lib/prisma'
 
 interface SessionUser {
@@ -25,14 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Question is required' }, { status: 400 })
     }
 
-    // Validate if question is HR-related
-    if (!isHRRelated(question)) {
-      return NextResponse.json({ 
-        error: "I can only answer questions related to HR policies, leaves, salary, and company benefits. Please ask me something related to HR.",
-        isValid: false
-      }, { status: 400 })
-    }
-
+    // Get answer from Gemini AI (it will handle validation and responding)
     const answer = await getAnswer(question)
 
     let chat

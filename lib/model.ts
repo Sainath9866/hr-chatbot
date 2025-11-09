@@ -2,18 +2,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
 import path from 'path';
 
-const HR_KEYWORDS = [
-  'salary', 'leave', 'holiday', 'holidays', 'probation', 'notice period',
-  'working hours', 'work from home', 'office hours', 'attendance', 'payslip',
-  'payroll', 'dress code', 'appraisal', 'promotion', 'benefits', 'overtime',
-  'HR portal', 'password', 'personal details', 'maternity', 'paternity',
-  'ID card', 'lunch break', 'transportation', 'weekend', 'bonus', 'bonuses',
-  'team outing', 'intern', 'interns', 'biometric', 'health insurance',
-  'retirement', 'certificate', 'transfer', 'branch', 'experience letter',
-  'settlement', 'IT', 'support', 'sick leave', 'sick leaves', 'encash',
-  'wfh', 'remote work', 'WFH'
-]
-
 // Load HR FAQ data
 let hrFaqData: Array<{ question: string; answer: string }> = [];
 
@@ -36,13 +24,6 @@ try {
   console.error('Error loading HR FAQ:', error);
 }
 
-export function isHRRelated(question: string): boolean {
-  const lowerQuestion = question.toLowerCase()
-  
-  // Check if any HR keyword is present
-  return HR_KEYWORDS.some(keyword => lowerQuestion.includes(keyword))
-}
-
 export async function getAnswer(question: string): Promise<string> {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -53,19 +34,31 @@ export async function getAnswer(question: string): Promise<string> {
       .map(qa => `Q: ${qa.question}\nA: ${qa.answer}`)
       .join('\n\n');
 
-    const prompt = `You are an HR assistant. Use the following HR FAQ database to answer the user's question.
-    
+    const prompt = `You are a helpful and friendly HR assistant AI. Your role is to provide accurate information about HR policies and workplace matters based on the company's HR FAQ database.
+
+HR FAQ Database:
 ${context}
 
 User Question: ${question}
 
 Instructions:
-1. Answer based ONLY on the HR FAQ database provided above
-2. If the answer is in the database, provide it directly
-3. If not in the database, say "I don't have information about this. Please contact the HR department for assistance."
-4. Keep your answer concise and professional
+1. FIRST, determine if the user's question is related to HR, human resources, workplace policies, or employee-related topics.
 
-Answer:`;
+2. If the question is NOT related to HR topics (like weather, sports, general knowledge, programming, etc.), respond with EXACTLY this message:
+"I'm your HR Assistant and can only answer questions related to HR policies, workplace matters, employee benefits, leaves, salary, and other HR-related topics. Please ask me something related to HR, and I'll be happy to help!"
+
+3. If the question IS related to HR:
+   - Answer based primarily on the HR FAQ database provided above
+   - Provide helpful, conversational, and professional responses
+   - If the exact answer is in the database, use that information but feel free to rephrase it naturally
+   - If the information is not in the database, politely explain: "I don't have specific information about this in our HR database. I recommend reaching out to the HR department directly at hr@company.com or visiting the HR office for detailed assistance on this matter."
+   - Be empathetic and understanding in your tone
+   - Keep answers clear and concise, but natural and conversational
+   - You can provide general HR guidance even if not explicitly in the FAQ, as long as it's standard HR practice
+
+HR-related topics include: salary, compensation, bonuses, leaves (sick/vacation/maternity/paternity), working hours, attendance, benefits, insurance, retirement, probation period, notice period, work from home, remote work, employee onboarding, appraisals, promotions, dress code, workplace conduct, company policies, training, transfers, experience letters, certificates, and other employee/workplace matters.
+
+Provide your answer:`;
 
     const result = await model.generateContent(prompt);
     const response = result.response;
@@ -74,6 +67,6 @@ Answer:`;
     return answer;
   } catch (error) {
     console.error('Error calling Gemini:', error);
-    return 'Sorry, there was an error processing your question. Please try again later.'
+    return 'I apologize, but I encountered an error while processing your question. Please try again in a moment, or contact the HR department directly if this is urgent.'
   }
 }
